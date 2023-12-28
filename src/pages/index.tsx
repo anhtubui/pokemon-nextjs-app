@@ -54,7 +54,7 @@ export default function Home() {
     };
 
     const handleTypeClick = (type: PokemonTypeData) => {
-        if (selectedTypes.includes())
+
 
         setPokemonList(type.pokemon.map(({pokemon}) => pokemon));
         paginate(1);
