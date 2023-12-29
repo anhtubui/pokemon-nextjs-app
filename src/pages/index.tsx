@@ -54,11 +54,16 @@ export default function Home() {
     };
 
     const handleTypeClick = (type: PokemonTypeData) => {
-
-
-        setPokemonList(type.pokemon.map(({pokemon}) => pokemon));
+        if (selectedTypes.length !== 0 && selectedTypes.some((selectedType) => selectedType.id === type.id)) {
+            setSelectedTypes((prevTypes) => prevTypes.filter((prevType) => prevType.id !== type.id));
+        } else {
+            setSelectedTypes((prevTypes) => [...prevTypes, type]);
+        }
         paginate(1);
+        setPokemonList(type.pokemon.map(({pokemon}) => pokemon));
     };
+
+    console.log(selectedTypes);
 
     useEffect(() => {
         const fetchData = () => {
@@ -68,6 +73,10 @@ export default function Home() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        console.log("Update pokemon list");
+    }, selectedTypes);
+
 
     return (
         <div>
@@ -75,7 +84,7 @@ export default function Home() {
                 <div className={"mx-auto max-w-screen-xl"}>
                     <div className={"flex items-center mx-4 my-4"}>
                         <div className={"mr-2 my-4 font-bold self-start"}>
-                            Types:
+                            {"Types:"}
                         </div>
                         <div>
                             {typeList.map((type) =>  (
@@ -83,14 +92,19 @@ export default function Home() {
                                     key={type.name}
                                     type={type}
                                     handleTypeClick={handleTypeClick}
+                                    selectedTypes={selectedTypes}
                                 />
                             ))}
                         </div>
                     </div>
-                    <div className={"my-12 mx-4 font-bold"}>{`${pokemonList.length} results found.`}</div>
+                    {pokemonList.length > 0 && <div className={"my-12 mx-4 font-bold"}>{`${pokemonList.length} results found.`}</div>}
                 </div>
             )}
-            {pokemonList.length === 0 ? "No result found" : (
+            {pokemonList.length === 0 ? (
+                <div className={"text-center text-3xl mx-auto my-24 font-bold"}>
+                    {"No result found"}
+                </div>
+                ) : (
                 <div className={"grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4"}>
                     {(paginatedList as PokemonListType).map((pokemon) => <Pokemon pokemon={pokemon} key={pokemon.name} />)}
                 </div>
@@ -101,14 +115,14 @@ export default function Home() {
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
                 >
-                    Prev
+                    {"Prev"}
                 </button>
                 <button
                     className={"p-2 bg-red-900 rounded-md text-white mr-4 disabled:opacity-40 disabled:cursor-not-allowed select-none"}
                     onClick={() => paginate(currentPage + 1)}
                     disabled={currentPage*pageSize > pokemonList.length}
                 >
-                    Next
+                    {"Next"}
                 </button>
             </div>
         </div>
