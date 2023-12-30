@@ -1,4 +1,14 @@
 ## Getting Started
+
+Install the dependencies:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
 Run the development server:
 
 ```bash
