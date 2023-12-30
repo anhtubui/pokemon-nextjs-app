@@ -36,4 +36,26 @@ declare type PokemonTypeData = {
     }>;
 };
 
-declare type PokemonData = any;
+declare type PokemonData = {
+    id: number;
+    name: string;
+    base_experience: number;
+    height: number;
+    is_default: boolean;
+    order: number;
+    weight: number;
+    abilities: Array<any>;
+    forms: Array<NamedAPIResource>;
+    game_indices: Array<any>;
+    held_items: Array<any>;
+    location_area_encounters: string;
+    moves: Array<any>;
+    past_types: Array<any>;
+    sprites: any;
+    species: NamedAPIResource;
+    stats: Array<any>;
+    types: Array<{
+        slot: number;
+        type: PokemonType;
+    }>;
+};

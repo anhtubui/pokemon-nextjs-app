@@ -1,32 +1,51 @@
-import Head from "next/head";
 import React, {useEffect, useState} from "react";
+
 import Type from "@/components/Type";
 import Pokemon from "@/components/Pokemon";
 import usePagination from "@/helpers/usePagination";
 
-type PokemonDataResponse = {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: Array<PokemonIdem>;
-}
-
-type TypesDataResponse = {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: Array<PokemonType>;
-}
-
 type PokemonListType = Array<PokemonIdem>;
+type TypeListType = Array<PokemonType>;
+
+export interface PokemonDataResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: PokemonListType;
+}
+
+export interface TypesDataResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: TypeListType;
+}
 
 const pageSize = 48;
 
+const getPokemonListFromTypes = (types: Array<PokemonTypeData>) => {
+    const initialList = types[0].pokemon.map(({pokemon}) => pokemon);
+
+    if (types.length === 1) {
+        return initialList;
+    }
+
+    return types.reduce((acc, crr) => {
+        // create a map from the coming array
+        const lookup = new Set(crr.pokemon.map(({pokemon}) => pokemon.name));
+
+        // return the list of common objects
+        return acc.filter(({name}) => lookup.has(name));
+    }, initialList);
+};
+
 export default function Home() {
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [pokemonResponse, setPokemonResponse] = useState<PokemonDataResponse | undefined>(undefined);
     const [pokemonList, setPokemonList] = useState<PokemonListType>([]);
-    const [typeList, setTypeList] = useState<Array<PokemonType>>([]);
+    const [typeList, setTypeList] = useState<TypeListType>([]);
     const [selectedTypes, setSelectedTypes] = useState<Array<PokemonTypeData>>([]);
+
     const {paginatedList , paginate, currentPage} = usePagination(pokemonList, pageSize);
 
     const fetchPokemonList = async () => {
@@ -35,6 +54,7 @@ export default function Home() {
                 method: "GET",
             });
             const data: PokemonDataResponse = await res.json();
+            setPokemonResponse(data);
             setPokemonList(data.results);
         } catch (e) {
             console.error("Error fetching the data:", e);
@@ -60,27 +80,27 @@ export default function Home() {
             setSelectedTypes((prevTypes) => [...prevTypes, type]);
         }
         paginate(1);
-        setPokemonList(type.pokemon.map(({pokemon}) => pokemon));
     };
 
-    console.log(selectedTypes);
 
     useEffect(() => {
         const fetchData = () => {
-            setLoading(true);
             Promise.all([fetchPokemonList(), fetchTypeList()]).then(() => setLoading(false));
         };
         fetchData();
     }, []);
 
     useEffect(() => {
-        console.log("Update pokemon list");
-    }, selectedTypes);
-
+        if(selectedTypes.length === 0) {
+            if (pokemonResponse) setPokemonList(pokemonResponse.results);
+        } else {
+            setPokemonList(getPokemonListFromTypes(selectedTypes));
+        }
+    }, [selectedTypes]);
 
     return (
         <div>
-            {loading ? "...Loading" : (
+            {loading ? "Loading" : (
                 <div className={"mx-auto max-w-screen-xl"}>
                     <div className={"flex items-center mx-4 my-4"}>
                         <div className={"mr-2 my-4 font-bold self-start"}>
@@ -102,7 +122,7 @@ export default function Home() {
             )}
             {pokemonList.length === 0 ? (
                 <div className={"text-center text-3xl mx-auto my-24 font-bold"}>
-                    {"No result found"}
+                    {"No results found."}
                 </div>
                 ) : (
                 <div className={"grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4"}>
