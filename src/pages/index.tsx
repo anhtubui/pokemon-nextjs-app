@@ -24,8 +24,11 @@ export interface TypesDataResponse {
 const pageSize = 48;
 
 const getPokemonListFromTypes = (types: Array<PokemonTypeData>) => {
-    const initialList = types[0].pokemon.map(({pokemon}) => pokemon);
+    if (types.length === 0) {
+        return [];
+    }
 
+    const initialList = types[0].pokemon.map(({pokemon}) => pokemon);
     if (types.length === 1) {
         return initialList;
     }
